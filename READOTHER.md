@@ -1,8 +1,10 @@
 # 天线理论与技术课程设计
 
-<div style="margin: 0 auto; font-size: 20px; font-weight: bold;" align="center">邹雨泽 D201677498</div>
+<div style="margin: 0 auto; font-size: 20px; font-weight: bold;" align="center">邹雨泽</br>D201677498</div>
 
 ## 基于超表面的波束可重构天线技术研究
+
+可复现源码: [zouyu4524/RIS_impl](https://github.com/zouyu4524/RIS-impl)
 
 ## 课题背景
 
@@ -35,19 +37,159 @@ $$
 
 其中$d$表示金属通孔直径；$s$代表金属通孔排列周期，即相邻两通孔间的距离；$w$表示两排金属通孔之间的距离。
 
-**基片集成波导(Substrate Integrated Waveguide, SIW) + 微带线**
+### 设计原理
+
+基于单元相位调控的波束可重构天线，通过控制每个辐射单元的补偿相位，实现波束辐射方向的可重构特性。一维辐射单元按照图2的方法等间距周期性排列，图中黑点表示沿$x$轴放置的单元.
 
 <div style="margin: 0 auto;" align="center">
-    <img src="figures/method.png" width=600px>
+    <img src="figures/原理1.png" width=400px></br>
+    <b>图2. 等间距周期排列单元示意图</b>
 </div>
+
+设相邻单元间隔距离为$d_p$, 具有这种排列结构的天线期望辐射波束的偏角为$\theta$时, 所需各个位置单元泄露出的电磁波应具有如下相位:
+
+$$
+\Phi_{\text{exp}} = - k_0 \cdot \sin\theta \cdot \left( n\cdot d_p\right) + \Phi_{\text{exp0}}, \quad  n=1,\ldots, N
+$$
+
+其中$k_0$表示自由空间波数, $n$为单元序列号, $\Phi_{\text{exp0}}$表示起始相位。而实际上, 电磁波在沿波导结构传送至各个单元位置时的相位为:
+
+$$
+\Phi_{\text{real}}=-k_g \cdot \left( n\cdot d_p\right) + \Phi_{\text{real0}}, \quad n=1,\ldots, N
+$$
+
+$\Phi_{\text{real0}}$表示起始相位, $k_g$为电磁波在导波结构中传播的波数, $k_g$的计算方法为: $k_g=\frac{2\pi}{\lambda_g}=k_0 \sqrt{\epsilon_r \mu_r}$
+综上, 各个单元需要补偿的相位为:
+
+$$
+\Phi_{\Delta}=\Phi_{\text{exp}}-\Phi_{\text{real}} = (k_g - k_0 \sin\theta) \cdot n \cdot d_p + \Phi_0, \quad n = 1, \ldots, N
+$$
+
+$\Phi_0$等于$\Phi_{\text{exp0}}$与$\Phi_{\text{real0}}$之差, 在计算每个单元的补充相位时, 合理设计$\Phi_0$可以提高波束的辐射方向精度。在天线设计中, 辐射单元沿导波结构等间距排列, 每个单元通过改变与导波结构相连的位置实现不同的相位补偿。每个单元与导波结构的连接方式有限, 以2-bit为例：
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/原理2.png" width=600px></br>
+    <b>图3. 一维2-bit单元排列示意图</b>
+</div>
+
+辐射单元按一维等间距周期排列, 相邻两单元相距$d_p$距离, 约为工作频率对应自由空间波长的一半。每个单元中, 有两个漏波结构对称排列于导波结构两侧, 2-bit编码的辐射单元有四种位置可与导波结构相连(如图3中A,B,C,D所示), 这四个位置分别编码为1,2,3,4。每次仅取一个位置与导波结构相连, 由于每个漏波结构的两个连接位置相邻距离$d_s$为四分之一介质波长, 且漏波结构关于导波结构对称, 故1,2,3,4四个位置连接上导波结构分别可以补偿相位$0^\circ$, $-90^\circ$, $-180^\circ$, $-270^\circ$。将各个单元相位补偿公式计算所得结果数字化对应2-bit的标准如下:
+
+$$
+\Phi=\begin{cases}
+    0^\circ & \Phi_{\Delta}<-315^\circ~\text{or}~\Phi_{\Delta}\geq -45^\circ\\
+    -90^\circ & -135^{\circ} \leq \Phi_{\Delta} < -45^\circ\\
+    -180^\circ & -225^{\circ} \leq \Phi_{\Delta} < -135^\circ\\
+    -270^\circ & -315^{\circ} \leq \Phi_{\Delta} < -225^\circ\\
+\end{cases}
+$$
+
 
 ## 仿真建模
 
+基于以上的原理分析, 通过HFSS仿真软件模拟仿真以验证设计。共设计了10个连续排列的2-bit单元。
+
 ### 模型结构
 
+天线设计及参数如图4, 表1所示。
+
 <div style="margin: 0 auto;" align="center">
-    <img src="figures/model.png" width=600px>
+    <img src="figures/model_design.png" height=300px></br>
+    <b>图4. 天线设计图</b>
 </div>
+
+<b>表1. 天线设计参数</b>
+| 参数 | $l_c$ | $w_c$ | $l_s$ | $w_s$ | $d_s$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|值(mm)| 23 | 9.6 | 3 | 2 | 10 |
+| 参数 | $w_m$ | $gap$ | $l_1$ | $w_1$ | $d_p$ |
+|值(mm)| 1.5 | 2 | 8 | 3 | 25 |
+
+相应的呈现在HFSS中的模型如图5所示。
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/HFSS_model.png" width=450px></br>
+    <b>图5. HFSS天线模型</b>
+</div>
+
+> 图中, 红色方块表示连接到导波的开关, 矩形黄铜色为漏波单元棕色为微带线。
+
+根据理论公式, 分别验证偏转角为$-25^\circ$, $0^\circ$以及$50^\circ$三种情形, 计算可得这三种情形下10个单元导波连接方式分别为:
+
+<div style="font-size: 12px">
+
+| <span style="font-size:8px">目标角度</span>  | Unit1 | Unit2 | Unit3 | Unit4 | Unit5 | Unit6 | Unit7 | Unit8 | Unit9 | Unit10 |
+|:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |:---: |
+| $-25^\circ$ | 1 | 2 | 3 | 4 | 1 | 2 | 3 | 4 | 1 | 3 |
+| $0^\circ$ | 1 | 3 | 4 | 2 | 4 | 1 | 3 | 1 | 3 | 4 |
+| $50^\circ$ | 1 | 4 | 3 | 2 | 1 | 4 | 3 | 2 | 1 | 4 | 
+</div>
+
+### 仿真结果
+
+三种目标角度对应的开关设计仿真图如下所示:
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/angle=-25.png" width=450px></br>
+    <b>(a) $\theta=-25^\circ$</b></br>
+    <img src="figures/angle=0.png" width=450px></br>
+    <b>(b) $\theta=0^\circ$</b></br>
+    <img src="figures/angle=50.png" width=450px></br>
+    <b>(c) $\theta=50^\circ$</b></br>
+    <b>图6. 不同波束方向角开关连接图示</b>
+</div>
+
+
+#### 实际波束方向角
+
++ $-25^\circ$
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/-25/xoz.png" width=450px></br>
+    <b>(a) 极坐标</b></br>
+    <img src="figures/-25/E_plane.png" width=450px></br>
+    <b>(b) 平面坐标系</b></br>
+    <img src="figures/-25/3d.png" width=450px></br>
+    <b>(c) 3维图</b></br>
+    <b>图7. $-25^\circ$方向性仿真图</b>
+</div>
+
+> 实际得到的增益最高对应角度为$-24^\circ$。
+
++ $0^\circ$
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/0/xoz.png" width=450px></br>
+    <b>(a) 极坐标</b></br>
+    <img src="figures/0/E_plane.png" width=450px></br>
+    <b>(b) 平面坐标系</b></br>
+    <img src="figures/0/3d.png" width=450px></br>
+    <b>(c) 3维图</b></br>
+    <b>图8. $0^\circ$方向性仿真图</b>
+</div>
+
+> 实际得到的增益最高对应角度为$-1^\circ$, 与论文[2]中结果一致。
+
+
++ $50^\circ$
+
+<div style="margin: 0 auto;" align="center">
+    <img src="figures/50/xoz.png" width=450px></br>
+    <b>(a) 极坐标</b></br>
+    <img src="figures/50/E_plane.png" width=450px></br>
+    <b>(b) 平面坐标系</b></br>
+    <img src="figures/50/3d.png" width=450px></br>
+    <b>(c) 3维图</b></br>
+    <b>图9. $-25^\circ$方向性仿真图</b>
+</div>
+
+> 实际得到的增益最高对应角度为$46^\circ$, 与论文[2]中结果一致。
+
+
+> 仿真记录: 仿真很吃内存, 约占50G; 过程耗时, 一组大约耗时10小时。
+
+## 总结
+
+本次课程设计复现了论文[2]中设计的基于微带线与基片集成波导技术的可重构天线。组合调节连续等间距排列于微带线上的单元与导波连接模式可构成对准不同角度的波束。调节方式易于计算, 为波束可重构天线设计提供了简单有效的方法。
 
 ## 参考文献
 
