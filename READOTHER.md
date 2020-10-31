@@ -1,6 +1,6 @@
 # 天线理论与技术课程设计
 
-<div style="margin: 0 auto; font-size: 20px; font-weight: bold;" align="center">邹雨泽</br>D201677498</div>
+<div style="margin: 0 auto; font-size: 20px; font-weight: bold;" align="center">邹雨泽</div>
 
 ## 基于超表面的波束可重构天线技术研究
 
@@ -179,7 +179,7 @@ $$
     <b>(b) 平面坐标系</b></br>
     <img src="figures/50/3d.png" width=450px></br>
     <b>(c) 3维图</b></br>
-    <b>图9. $-25^\circ$方向性仿真图</b>
+    <b>图9. $50^\circ$方向性仿真图</b>
 </div>
 
 > 实际得到的增益最高对应角度为$46^\circ$, 与论文[2]中结果一致。
